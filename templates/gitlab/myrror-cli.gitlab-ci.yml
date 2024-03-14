@@ -1,0 +1,10 @@
+myrror-scan:
+  stage: test
+  image: myrrorsecurity/myrror-cli:latest
+  before_script:
+    - MYRROR_REPOSITORY=$(basename $CI_PROJECT_PATH)
+  script:
+    - node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
+  variables:
+    MYRROR_BRANCH: $CI_COMMIT_REF_NAME
+    MYRROR_COMMIT: $CI_COMMIT_SHA
