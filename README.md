@@ -29,6 +29,31 @@ MYRROR_TIMEOUT=3600000 # an hour in milliseconds
 
 You can set these variables in a `.env` file at the root of the project.
 
+## GitLab Integration
+
+### Pipeline Configuration
+
+The GitLab CI/CD pipeline is controlled by a file named `.gitlab-ci.yml` located in the root directory of the project.
+
+#### .gitlab-ci.yml
+
+Myrror provides a template that you can use that already has jobs defined for the pipeline. All you need to do is add this one line that includes the template file.
+
+```yaml
+include: 'https://raw.githubusercontent.com/blindspot-security/myrror-cli/main/templates/gitlab/myrror-cli.gitlab-ci.yml'
+```
+
+If you need to override any parameters or variables of the scan, all you need to do is define the variables in the .gitlab-ci.yml file. For example, your .gitlab-ci.yml file would look like this:
+
+```yaml
+include: 'https://raw.githubusercontent.com/blindspot-security/myrror-cli/main/templates/gitlab/myrror-cli.gitlab-ci.yml'
+
+variables:
+  MYRROR_CLIENT_ID: 'your-client-id'
+  MYRROR_SECRET: 'your-secret'
+```
+Replace 'your-client-id' and 'your-secret' with the actual values.
+
 ## Usage
 
 Before using the CLI, you first need to build the project:
