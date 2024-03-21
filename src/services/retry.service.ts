@@ -26,6 +26,7 @@ export class RetryService {
     const interval = setInterval(async () => {
       try {
         const token = await this.authService.getToken();
+
         const response = await axios.get<IStatusResponse>(url, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -62,7 +63,14 @@ export class RetryService {
           return;
         }
       } catch (error) {
-        this.logger.error(error.message);
+        if (error.response.status === 401) {
+          this.logger.error('Unauthorized');
+        } else if (error.response.status === 403) {
+          this.logger.error('Not enough permissions');
+        } else {
+          this.logger.error(error.message);
+        }
+
         process.exitCode = 1;
         clearInterval(interval); // Stop the interval on error
         clearTimeout(timeout); // Clear the timeout on error
