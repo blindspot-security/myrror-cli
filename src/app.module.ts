@@ -12,10 +12,12 @@ import { appConfig } from './config';
       load: [appConfig],
       validate: (config) => {
         if (!config.MYRROR_CLIENT_ID) {
-          throw new Error('env variable MYRROR_CLIENT_ID are not set. Please check the .env file.');
+          console.error('env variable MYRROR_CLIENT_ID are not set.');
+          process.exit(1);
         }
         if (!config.MYRROR_SECRET) {
-          throw new Error('env variable MYRROR_SECRET are not set. Please check the .env file.');
+          console.error('env variable MYRROR_CLIENT_ID are not set.');
+          process.exit(1);
         }
         return config;
       },

@@ -27,7 +27,14 @@ export class AuthService {
       this.token = response.data.accessToken;
       this.expiredAt = Date.now() + response.data.expiresIn * 1000;
     } catch (error) {
-      this.logger.error(error.message);
+      if (error.response.status === 504) {
+        this.logger.error('Gateway Timeout');
+        this.logger.error('Client ID or Client Secret is incorrect');
+      } else {
+        this.logger.error(error.message);
+      }
+      process.exitCode = 1;
+      process.exit();
     }
   }
 
