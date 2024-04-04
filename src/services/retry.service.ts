@@ -63,9 +63,9 @@ export class RetryService {
           return;
         }
       } catch (error) {
-        if (error.response.status === 401) {
+        if (error.response?.status === 401) {
           this.logger.error('Unauthorized');
-        } else if (error.response.status === 403) {
+        } else if (error.response?.status === 403) {
           this.logger.error('Not enough permissions');
         } else {
           this.logger.error(error.message);
