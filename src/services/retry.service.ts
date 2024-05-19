@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
-import { IStatusResponse } from 'src/types';
+import { IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
 import { IssuesService } from './issues.service';
-import { EScanningStatus } from 'src/types/scanning-status.enum';
+import { EScanningStatus } from '../types/scanning-status.enum';
 
 @Injectable()
 export class RetryService {
