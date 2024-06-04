@@ -2,16 +2,34 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RetryService } from '../../src/services/retry.service';
 import axios from 'axios';
 import { Logger } from '@nestjs/common';
+import { AuthService, IssuesService } from '../../src/services';
+import { ConfigService } from "@nestjs/config";
 
 jest.mock('axios');
+
+const mockConfigService = {
+  get: jest.fn().mockReturnValue('someConfigValue'),
+};
+
+const mockAuthService = {
+  getToken: jest.fn(),
+};
+
 
 describe('RetryService', () => {
   let service: RetryService;
   let logger: Logger;
+  let authService: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [RetryService, Logger],
+      providers: [
+        RetryService,
+        Logger,
+        IssuesService,
+        { provide: ConfigService, useValue: mockConfigService },
+        { provide: AuthService, useValue: mockAuthService },
+      ],
     }).compile();
 
     service = module.get<RetryService>(RetryService);
@@ -34,14 +52,15 @@ describe('RetryService', () => {
     const retryTime = 100;
 
     const logSpy = jest.spyOn(logger, 'log');
-    (axios.get as jest.Mock).mockResolvedValueOnce({ data: { status: 'pending' } });
-    (axios.get as jest.Mock).mockResolvedValueOnce({ data: { status: 'completed' } });
+    (axios.get as jest.Mock).mockResolvedValueOnce({ data: {status: "pending" } });
+    (axios.get as jest.Mock).mockResolvedValueOnce({ data: {status: "completed" } });
 
     const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('Process exited');
     });
 
     const promise = service.retryUntilSuccess(url, maxExecutionTime, retryTime);
+    (axios.get as jest.Mock).mockResolvedValueOnce({ data: {status: 'completed'} });
 
     // Wait for the interval to be executed twice
     await new Promise((resolve) => setTimeout(resolve, retryTime * 3));
@@ -52,10 +71,11 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('retrying...');
-    expect(logSpy).toHaveBeenCalledWith('status is completed'); // Check that the logger received "status is completed"
+    expect(logSpy).toHaveBeenCalledWith('status is pending');
+    expect(logSpy).toHaveBeenCalledWith('status is completed');
     expect(axios.get).toHaveBeenCalledTimes(2);
     expect(processExitSpy).not.toHaveBeenCalled();
+    expect(axios.get).toHaveBeenCalledTimes(2);
   });
 
   it('should exit process when max execution time is exceeded', async () => {
@@ -81,7 +101,10 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('retrying...');
+    expect(logSpy).toHaveBeenCalledWith('status is pending');
+    expect(logSpy).toHaveBeenCalledWith('status is pending');
+    expect(logSpy).toHaveBeenCalledWith('status is pending');
+
     expect(axios.get).toHaveBeenCalled();
     expect(processExitSpy).toHaveBeenCalled();
   });

@@ -1,5 +1,6 @@
 import { StatusCommand } from '../../src/commands/status.command';
 import { RetryService } from '../../src/services/retry.service';
+import { stringToMd5 } from '../../src/utils';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { CommandOptions } from 'src/types';
@@ -129,16 +130,21 @@ describe('StatusCommand', () => {
     const branch = 'branch';
     const commit = 'commit';
 
-    configService.get
-      .mockReturnValueOnce(url)
-      .mockReturnValueOnce(timeout)
-      .mockReturnValueOnce(retryTime)
-      .mockReturnValueOnce(repository)
-      .mockReturnValueOnce(branch)
-      .mockReturnValueOnce(commit);
+    configService.get.mockImplementation((key: string) => {
+      const configMap = {
+        'app.apiUrl': url,
+        'app.timeout': timeout,
+        'app.retryTime': retryTime,
+        'app.repository': repository,
+        'app.branch': branch,
+        'app.commit': commit,
+      };
+      return configMap[key];
+    }
+    );
 
     await statusCommand.run([]);
 
-    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/scm/${repository}/${branch}/${commit}/status`, timeout, retryTime);
+    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/${stringToMd5(repository)}/${stringToMd5(branch)}/${commit}/status`, timeout, retryTime);
   });
 });
