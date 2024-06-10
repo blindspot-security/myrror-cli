@@ -52,7 +52,39 @@ variables:
   MYRROR_CLIENT_ID: 'your-client-id'
   MYRROR_SECRET: 'your-secret'
 ```
-Replace 'your-client-id' and 'your-secret' with the actual values.
+
+Replace 'your-client-id' and 'your-secret' with the actual values. It is recommended to use secret values for these variables.
+
+## Bitbucket Integration
+
+### Pipeline Configuration
+
+The Bitbucket CI/CD pipeline is controlled by a file named `bitbucket-pipelines.yml` located in the root directory of the project.
+
+#### bitbucket-pipelines.yml
+
+Myrror provides a template that you can use that already has jobs defined for the pipeline. All you need to do is copy the file from `templates/bitbucket` and rename it from to `bitbucket-pipelines.yml` in your repository.
+
+In case you already have a `bitbucket-pipelines.yml` file, you can add the following step to the file:
+
+```yaml
+pipelines:
+  default:
+    - step:
+        name: Myrror Scan
+        image: myrrorsecurity/myrror-cli:latest
+        caches:
+          - node
+        script:
+          - export MYRROR_REPOSITORY=$BITBUCKET_REPO_SLUG
+          - export MYRROR_BRANCH=$BITBUCKET_BRANCH
+          - export MYRROR_COMMIT=$BITBUCKET_COMMIT
+          - export MYRROR_CLIENT_ID='your-client-id'
+          - export MYRROR_SECRET='your-secret'
+          - node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
+```
+
+Replace 'your-client-id' and 'your-secret' with the actual values. It is recommended to use secret values for these variables.
 
 ## Usage
 

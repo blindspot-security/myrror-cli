@@ -1,0 +1,14 @@
+pipelines:
+  default:
+    - step:
+        name: Myrror Scan
+        image: myrrorsecurity/myrror-cli:latest
+        caches:
+          - node
+        script:
+          - export MYRROR_REPOSITORY=$BITBUCKET_REPO_SLUG
+          - export MYRROR_BRANCH=$BITBUCKET_BRANCH
+          - export MYRROR_COMMIT=$BITBUCKET_COMMIT
+          - export MYRROR_CLIENT_ID='your-client-id'
+          - export MYRROR_SECRET='your-secret'
+          - node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
