@@ -51,7 +51,7 @@ export class RetryService {
               process.exit(0); // Exit with success
             } else {
               await this.issuesService.drawIssuesTable(issues.data);
-              process.exit(1); // Exit with failure due to issues
+              process.exit(1);
             }
           } else {
             this.logger.error(`Scan was ${response.data?.status || 'aborted'}`);
@@ -69,9 +69,9 @@ export class RetryService {
           this.logger.error(error.message);
         }
 
-        clearInterval(interval); // Stop the interval on error
-        clearTimeout(timeout); // Clear the timeout on error
-        process.exit(1); // Exit with error
+        clearInterval(interval); 
+        clearTimeout(timeout); 
+        process.exit(1); 
       }
     }, retryTime);
   }
