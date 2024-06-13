@@ -69,9 +69,9 @@ export class RetryService {
           this.logger.error(error.message);
         }
 
-        clearInterval(interval); 
-        clearTimeout(timeout); 
-        process.exit(1); 
+        clearInterval(interval);
+        clearTimeout(timeout);
+        process.exit(1);
       }
     }, retryTime);
   }
