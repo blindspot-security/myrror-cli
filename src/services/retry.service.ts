@@ -13,14 +13,14 @@ export class RetryService {
     private authService: AuthService,
     private issuesService: IssuesService,
   ) {}
+
   continueStatuses = [EScanningStatus.WAITING, EScanningStatus.SCANNING];
   abortStatuses = [EScanningStatus.SKIPPED, EScanningStatus.SCANNED];
 
   async retryUntilSuccess(url: string, maxExecutionTime: number, retryTime: number) {
     const timeout = setTimeout(() => {
-      this.logger.error(`execution time exceeded. Stopping...`);
-      process.exitCode = 1;
-      process.exit();
+      this.logger.error('execution time exceeded. Stopping...');
+      process.exit(1);
     }, maxExecutionTime);
 
     const interval = setInterval(async () => {
@@ -32,35 +32,33 @@ export class RetryService {
             Authorization: `Bearer ${token}`,
           },
         });
+
         this.logger.log(`status is ${response.data?.status}`);
 
         if (!response.data || this.abortStatuses.includes(response.data.status)) {
           clearInterval(interval);
           clearTimeout(timeout);
-          if (response.data.status === EScanningStatus.SCANNED) {
+
+          if (response.data?.status === EScanningStatus.SCANNED) {
             const { repoId, branchId } = response.data;
             if (!repoId || !branchId) {
               this.logger.error('repoId or branchId is not provided');
-              process.exitCode = 1;
-              process.exit();
+              process.exit(1);
             }
             const issues = await this.issuesService.getIssues(repoId, branchId);
             if (issues.data.length === 0) {
               this.logger.log('No issues found');
-              process.exit();
+              process.exit(0); // Exit with success
             } else {
               await this.issuesService.drawIssuesTable(issues.data);
-              process.exitCode = 1;
-              process.exit();
+              process.exit(1);
             }
+          } else {
+            this.logger.error(`Scan was ${response.data?.status || 'aborted'}`);
+            process.exit(1);
           }
-          process.exitCode = 1;
-          process.exit();
-        }
-
-        if (this.continueStatuses.includes(response.data.status)) {
+        } else if (this.continueStatuses.includes(response.data.status)) {
           this.logger.log('retrying...');
-          return;
         }
       } catch (error) {
         if (error.response?.status === 401) {
@@ -71,13 +69,9 @@ export class RetryService {
           this.logger.error(error.message);
         }
 
-        process.exitCode = 1;
-        clearInterval(interval); // Stop the interval on error
-        clearTimeout(timeout); // Clear the timeout on error
-      } finally {
-        if (process.exitCode === 1) {
-          process.exit();
-        }
+        clearInterval(interval);
+        clearTimeout(timeout);
+        process.exit(1);
       }
     }, retryTime);
   }
