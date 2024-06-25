@@ -1,8 +1,10 @@
+image: atlassian/default-image:latest
+
 pipelines:
   pull-requests:
     '**':
       - step:
-          name: Myrror Scan on PR to main
+          name: Myrror Scan on PR to YOUR_MAIN_BRANCH
           image: myrrorsecurity/myrror-cli:latest
           caches:
             - node
