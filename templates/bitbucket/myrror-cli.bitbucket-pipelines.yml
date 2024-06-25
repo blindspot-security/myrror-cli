@@ -1,0 +1,23 @@
+image: atlassian/default-image:latest
+
+pipelines:
+  pull-requests:
+    '**':
+      - step:
+          name: Myrror Scan on PR to YOUR_MAIN_BRANCH
+          image: myrrorsecurity/myrror-cli:latest
+          caches:
+            - node
+          script:
+            - |
+              if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == "YOUR_MAIN_BRANCH" ]; then
+                echo "Running Myrror scan for PR to YOUR_MAIN_BRANCH"
+                export MYRROR_REPOSITORY=$BITBUCKET_REPO_SLUG
+                export MYRROR_BRANCH=$BITBUCKET_BRANCH
+                export MYRROR_COMMIT=$BITBUCKET_COMMIT
+                export MYRROR_CLIENT_ID=$MYRROR_CLIENT_ID
+                export MYRROR_SECRET=$MYRROR_SECRET
+                node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
+              else
+                echo "Not running Myrror scan, as this is not a PR to YOUR_MAIN_BRANCH"
+              fi
