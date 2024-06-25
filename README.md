@@ -69,75 +69,27 @@ Here is an example configuration you can use:
 
 ```yaml
 pipelines:
-  default:
-    - step:
-        name: Myrror Scan check for PR to YOUR_MAIN_BRANCH
-        image: myrrorsecurity/myrror-cli:latest
-        caches:
-          - node
-        script:
-          - echo "Installing axios..."
-          - npm install axios
-          - echo "Checking for open pull requests from $BITBUCKET_BRANCH to YOUR_MAIN_BRANCH"
-          - |
-            node -e "
-              const axios = require('axios');
-
-              (async () => {
-                try {
-                  const response = await axios.get(
-                    'https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/pullrequests', {
-                    headers: {
-                      'Authorization': 'Bearer $BITBUCKET_OAUTH_TOKEN'
-                    },
-                    params: {
-                      q: 'source.branch.name=\"$BITBUCKET_BRANCH\" AND destination.branch.name=\"YOUR_MAIN_BRANCH\" AND state=\"OPEN\"'
-                    }
-                  });
-                  const data = response.data;
-                  const prCount = data.values ? data.values.length : 0;
-                  console.log('Number of open PRs from $BITBUCKET_BRANCH to YOUR_MAIN_BRANCH:', prCount);
-                  
-                  if (prCount === 0) {
-                    console.log('No open pull request from $BITBUCKET_BRANCH to YOUR_MAIN_BRANCH. Skipping the pipeline.');
-                    process.exit(0); // Exits the pipeline successfully
-                  } else {
-                    console.log('Open pull request found from $BITBUCKET_BRANCH to YOUR_MAIN_BRANCH. Proceeding with the pipeline.');
-                  }
-                } catch (error) {
-                  console.log('error: ', error);
-                  if (error.response) {
-                    console.log('Error fetching PR data:', error.response.status, error.response.statusText);
-                  } else {
-                    console.log('Error:', error.message);
-                  }
-                  process.exit(1); // Fails the pipeline in case of error
-                }
-              })();
-            "
-          - export MYRROR_REPOSITORY=$BITBUCKET_REPO_SLUG
-          - export MYRROR_BRANCH=$BITBUCKET_BRANCH
-          - export MYRROR_COMMIT=$BITBUCKET_COMMIT
-          - export MYRROR_CLIENT_ID=$MYRROR_CLIENT_ID
-          - export MYRROR_SECRET=$MYRROR_SECRET
-          - export MYRROR_API="https://api.ls.blindspot-security.com/v1"
-          - node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
   pull-requests:
-    YOUR_MAIN_BRANCH:
+    '**':
       - step:
           name: Myrror Scan on PR to YOUR_MAIN_BRANCH
           image: myrrorsecurity/myrror-cli:latest
           caches:
             - node
           script:
-            - echo "Running Myrror scan for PR to YOUR_MAIN_BRANCH"
-            - export MYRROR_REPOSITORY=$BITBUCKET_REPO_SLUG
-            - export MYRROR_BRANCH=$BITBUCKET_BRANCH
-            - export MYRROR_COMMIT=$BITBUCKET_COMMIT
-            - export MYRROR_CLIENT_ID=$MYRROR_CLIENT_ID
-            - export MYRROR_SECRET=$MYRROR_SECRET
-            - export MYRROR_API="https://api.ls.blindspot-security.com/v1"
-            - node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
+            - |
+              if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == "YOUR_MAIN_BRANCH" ]; then
+                echo "Running Myrror scan for PR to YOUR_MAIN_BRANCH"
+                export MYRROR_REPOSITORY=$BITBUCKET_REPO_SLUG
+                export MYRROR_BRANCH=$BITBUCKET_BRANCH
+                export MYRROR_COMMIT=$BITBUCKET_COMMIT
+                export MYRROR_CLIENT_ID=$MYRROR_CLIENT_ID
+                export MYRROR_SECRET=$MYRROR_SECRET
+                export MYRROR_API="https://api.ls.blindspot-security.com/v1"
+                node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
+              else
+                echo "Not running Myrror scan, as this is not a PR to YOUR_MAIN_BRANCH"
+              fi
 ```
 
 Replace `YOUR_MAIN_BRANCH` with the name of your main branch (e.g., `main` or `master`). Also, replace `'your-client-id'` and `'your-secret'` with your actual Myrror client ID and secret. It is recommended to use secret values for these variables.
@@ -146,7 +98,6 @@ Make sure to set the following environment variables in your Bitbucket repositor
 
 - `MYRROR_CLIENT_ID`
 - `MYRROR_SECRET`
-- `BITBUCKET_OAUTH_TOKEN`
 
 This setup will ensure that Myrror scans are only executed if there are open pull requests from the current branch to your main branch.
 
