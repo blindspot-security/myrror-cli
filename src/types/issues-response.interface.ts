@@ -9,4 +9,5 @@ export interface IIssueResponse {
   dependencyName: string;
   dependencyInstalledVersion: string;
   reachabilityStatus: string;
+  fixedVersion: string[];
 }
