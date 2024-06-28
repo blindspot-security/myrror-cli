@@ -5,7 +5,7 @@ import * as Table from 'cli-table3';
 import { capitalize } from 'lodash';
 
 import { AuthService } from './auth.service';
-import { IPaginated, IIssueResponse, ESeverityLevel } from 'src/types';
+import { IPaginated, IIssueResponse, ESeverityLevel } from '../types';
 
 @Injectable()
 export class IssuesService {
