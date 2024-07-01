@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as Table from 'cli-table3';
-import { capitalize } from 'lodash';
 
 import { AuthService } from './auth.service';
 import { IPaginated, IIssueResponse, ESeverityLevel } from '../types';
@@ -52,7 +51,7 @@ export class IssuesService {
   }
 
   transformIssueToRow(issue: IIssueResponse, index: number) {
-    const severity = capitalize(issue.severity);
+    const severity = issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1).toLowerCase();
     const name = issue.name.replace(':', ': ');
     const dependency = `${issue.dependencyName}:${issue.dependencyInstalledVersion}`;
     const category = issue.category;
