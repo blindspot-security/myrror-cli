@@ -4,7 +4,7 @@ import axios from 'axios';
 import * as Table from 'cli-table3';
 
 import { AuthService } from './auth.service';
-import { IPaginated, IIssueResponse } from 'src/types';
+import { IPaginated, IIssueResponse, ESeverityLevel } from '../types';
 
 @Injectable()
 export class IssuesService {
@@ -39,14 +39,25 @@ export class IssuesService {
   async drawIssuesTable(issues: IIssueResponse[]) {
     const table = new Table();
 
-    table.push([{ colSpan: 5, content: 'PR Issues', hAlign: 'center' }]);
+    table.push([{ colSpan: 6, content: 'PR Issues', hAlign: 'center' }]);
 
-    table.push(['№', 'Name', 'Severity', 'Dependency name', 'Dependency version']);
+    table.push(['№', 'Severity', 'Name', 'Dependency', 'Category', 'Fixed Version']);
 
     issues.forEach((issue, index) => {
-      table.push([index + 1, issue.name, issue.severity, issue.dependencyName, issue.dependencyInstalledVersion]);
+      table.push(this.transformIssueToRow(issue, index));
     });
 
     console.log(table.toString());
+  }
+
+  transformIssueToRow(issue: IIssueResponse, index: number) {
+    const severity = issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1).toLowerCase();
+    const name = issue.name.replace(':', ': ');
+    const dependency = `${issue.dependencyName}:${issue.dependencyInstalledVersion}`;
+    const category = issue.category;
+    const fixedVersion = issue.fixedVersion.join(', ');
+    const coloredSeverity = `${issue.severity === ESeverityLevel.CRITICAL ? '🔴' : '🟠'} ${severity}`;
+
+    return [index + 1, coloredSeverity, name, dependency, category, fixedVersion];
   }
 }
