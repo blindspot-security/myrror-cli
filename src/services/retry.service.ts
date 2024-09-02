@@ -46,13 +46,13 @@ export class RetryService {
               process.exit(1);
             }
             const { issues, message } = await this.issuesService.getIssues(repoId, branchId);
-            if (issues.data.length === 0) {
+            if (issues.length === 0) {
               this.logger.log('No issues found');
               process.exit(0); // Exit with success
             } else {
-              await this.issuesService.drawIssuesTable(issues.data);
+              await this.issuesService.drawIssuesTable(issues);
               if (message) {
-                this.logger.log(message);
+                console.log(message);
               }
               process.exit(1);
             }

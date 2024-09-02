@@ -26,7 +26,6 @@ export class IssuesService {
         params: {
           repoId,
           branchId,
-          take: 100,
         },
       });
       return response.data;
