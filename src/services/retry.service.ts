@@ -52,7 +52,7 @@ export class RetryService {
             } else {
               await this.issuesService.drawIssuesTable(issues);
               if (message) {
-                console.log(message);
+                this.logger.log(message);
               }
               process.exit(1);
             }
