@@ -1,5 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
-import { AuthService, IssuesService, RetryService } from './services';
+import { AuthService, IssuesService, RetryService, ScmWebhookService } from './services';
 import { StatusCommand } from './commands';
 import { ConfigModule } from '@nestjs/config';
 import { appConfig } from './config';
@@ -23,6 +23,6 @@ import { appConfig } from './config';
       },
     }),
   ],
-  providers: [RetryService, AuthService, IssuesService, StatusCommand, Logger],
+  providers: [RetryService, AuthService, IssuesService, StatusCommand, Logger, ScmWebhookService],
 })
 export class AppModule {}

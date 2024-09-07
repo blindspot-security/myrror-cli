@@ -2,8 +2,8 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CommandRunner, Command, Option } from 'nest-commander';
 
-import { RetryService } from '../services';
-import { CommandOptions } from '../types';
+import { RetryService, ScmWebhookService } from '../services';
+import { CommandOptions, EScmType } from '../types';
 import { stringToMd5 } from '../utils';
 
 @Command({
@@ -13,6 +13,7 @@ import { stringToMd5 } from '../utils';
 export class StatusCommand extends CommandRunner {
   constructor(
     private readonly retryService: RetryService,
+    private readonly scmWebhookService: ScmWebhookService,
     private configService: ConfigService,
     private logger: Logger,
   ) {
@@ -76,6 +77,8 @@ export class StatusCommand extends CommandRunner {
     const rootNamespace = this.configService.get<string>('app.rootNamespace') || options?.rootNamespace;
     const branch = this.configService.get<string>('app.branch') || options?.branch;
     const commit = this.configService.get<string>('app.commit') || options?.commit;
+    const isManualWebhookMode = this.configService.get<boolean>('app.isManualWebhookMode');
+    const scmType = this.configService.get<EScmType>('app.scmType');
 
     if (!repository) {
       this.logger.error('Please provide repository');
@@ -101,5 +104,10 @@ export class StatusCommand extends CommandRunner {
     const branchNameHash = stringToMd5(branch);
 
     await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime);
+
+    if (isManualWebhookMode) {
+      const webhookEvent = await this.scmWebhookService.buildEvent(scmType);
+      await this.scmWebhookService.sendEvent(scmType, webhookEvent);
+    }
   }
 }
