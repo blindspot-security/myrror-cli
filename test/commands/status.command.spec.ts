@@ -4,12 +4,14 @@ import { stringToMd5 } from '../../src/utils';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { CommandOptions } from 'src/types';
+import { ScmWebhookService } from 'src/services';
 
 describe('StatusCommand', () => {
   let statusCommand: StatusCommand;
   let retryService: jest.Mocked<RetryService>;
   let configService: jest.Mocked<ConfigService>;
   let logger: jest.Mocked<Logger>;
+  let scmWebhookService: jest.Mocked<ScmWebhookService>;
 
   beforeEach(() => {
     retryService = {
@@ -28,7 +30,12 @@ describe('StatusCommand', () => {
       verbose: jest.fn(),
     } as any;
 
-    statusCommand = new StatusCommand(retryService, configService, logger);
+    scmWebhookService = {
+      buildEvent: jest.fn(),
+      sendEvent: jest.fn(),
+    } as any;
+
+    statusCommand = new StatusCommand(retryService, scmWebhookService, configService, logger);
   });
 
   afterEach(() => {
@@ -140,8 +147,7 @@ describe('StatusCommand', () => {
         'app.commit': commit,
       };
       return configMap[key];
-    }
-    );
+    });
 
     await statusCommand.run([]);
 
