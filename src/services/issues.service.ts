@@ -4,7 +4,7 @@ import axios from 'axios';
 import * as Table from 'cli-table3';
 
 import { AuthService } from './auth.service';
-import { IPaginated, IIssueResponse, ESeverityLevel } from '../types';
+import { IIssueResponse, ESeverityLevel, IIssuesDiffResponse } from '../types';
 
 @Injectable()
 export class IssuesService {
@@ -19,14 +19,13 @@ export class IssuesService {
       const url = this.configService.get<string>('app.apiUrl');
       const token = await this.authService.getToken();
 
-      const response = await axios.get<IPaginated<IIssueResponse>>(`${url}/issues/diff`, {
+      const response = await axios.get<IIssuesDiffResponse>(`${url}/issues/diff/cli`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params: {
           repoId,
           branchId,
-          take: 100,
         },
       });
       return response.data;
