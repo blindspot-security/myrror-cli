@@ -1,5 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
-import { AuthService, IssuesService, RetryService } from './services';
+import { AuthService, IssuesService, RetryService, WebhookService } from './services';
 import { StatusCommand } from './commands';
 import { ConfigModule } from '@nestjs/config';
 import { appConfig } from './config';
@@ -16,13 +16,13 @@ import { appConfig } from './config';
           process.exit(1);
         }
         if (!config.MYRROR_SECRET) {
-          console.error('env variable MYRROR_CLIENT_ID are not set.');
+          console.error('env variable MYRROR_SECRET are not set.');
           process.exit(1);
         }
         return config;
       },
     }),
   ],
-  providers: [RetryService, AuthService, IssuesService, StatusCommand, Logger],
+  providers: [WebhookService, RetryService, AuthService, IssuesService, StatusCommand, Logger],
 })
 export class AppModule {}
