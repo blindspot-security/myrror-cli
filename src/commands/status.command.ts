@@ -137,11 +137,6 @@ export class StatusCommand extends CommandRunner {
         throw new Error('Please provide repoOriginId');
       }
 
-      if (!rootNamespace) {
-        this.logger.error('Please provide rootNamespace');
-        throw new Error('Please provide rootNamespace');
-      }
-
       if (!pullRequestIid) {
         this.logger.error('Please provide pullRequestIid');
         throw new Error('Please provide pullRequestIid');
