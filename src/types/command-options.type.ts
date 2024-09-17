@@ -3,4 +3,5 @@ export type CommandOptions = {
   branch: string;
   commit: string;
   rootNamespace?: string;
+  withReport?: boolean;
 };

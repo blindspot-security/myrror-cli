@@ -12,4 +12,5 @@ export const appConfig = registerAs('app', () => ({
   branch: process.env.MYRROR_BRANCH,
   commit: process.env.MYRROR_COMMIT,
   orgId: process.env.MYRROR_ORG_ID,
+  projectDirectory: process.env.MYRROR_CI_PROJECT_DIR,
 }));

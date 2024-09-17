@@ -49,6 +49,14 @@ export class StatusCommand extends CommandRunner {
   }
 
   @Option({
+    flags: '-wr, --withReport [string]',
+    required: false,
+  })
+  parseWithReport(value: string): boolean {
+    return value === 'true';
+  }
+
+  @Option({
     flags: '-h, --help',
     description: 'Display help information',
   })
@@ -61,9 +69,10 @@ export class StatusCommand extends CommandRunner {
         -b, --branch [string]               Specify the branch
         -c, --commit [string]               Specify the commit
         -rns, --rootNamespace [string]      Specify the root namespace
+        -wr, --withReport [boolean]         Specify if the report should be generated
   
       Examples:
-        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace
+        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace -wr false
     `);
     process.exit(0);
   }
@@ -76,6 +85,7 @@ export class StatusCommand extends CommandRunner {
     const rootNamespace = this.configService.get<string>('app.rootNamespace') || options?.rootNamespace;
     const branch = this.configService.get<string>('app.branch') || options?.branch;
     const commit = this.configService.get<string>('app.commit') || options?.commit;
+    const withReport = this.configService.get<boolean>('app.withReport') || options?.withReport;
 
     if (!repository) {
       this.logger.error('Please provide repository');
@@ -100,6 +110,6 @@ export class StatusCommand extends CommandRunner {
     const repositoryNameHash = stringToMd5(repository);
     const branchNameHash = stringToMd5(branch);
 
-    await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime);
+    await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime, withReport);
   }
 }
