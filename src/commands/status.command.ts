@@ -74,6 +74,14 @@ export class StatusCommand extends CommandRunner {
   }
 
   @Option({
+    flags: '-wr, --withReport [string]',
+    required: false,
+  })
+  parseWithReport(value: string): boolean {
+    return value === 'true';
+  }
+
+  @Option({
     flags: '-h, --help',
     description: 'Display help information',
   })
@@ -86,12 +94,13 @@ export class StatusCommand extends CommandRunner {
         -b, --branch [string]               Specify the branch
         -c, --commit [string]               Specify the commit
         -rns, --rootNamespace [string]      Specify the root namespace
+        -wr, --withReport [boolean]         Specify if the report should be generated
         -pri, --pullRequestIid [string]     Specify the pull request iid
         -roi, --repoOriginId [string]       Specify the repo origin id
         -esw, --enabledSyntheticWebhooks    Specify if synthetic webhooks are enabled
   
       Examples:
-        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace -pri your-pull-request-iid -roi your-repo-origin-id -esw true
+        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace -wr false -pri your-pull-request-iid -roi your-repo-origin-id -esw true
     `);
     process.exit(0);
   }
@@ -107,6 +116,7 @@ export class StatusCommand extends CommandRunner {
     const pullRequestIid = this.configService.get<string>('app.pullRequestIid') || options?.pullRequestIid;
     const enabledSyntheticWebhooks = this.configService.get<boolean>('app.enabledSyntheticWebhooks') || options?.enabledSyntheticWebhooks;
     const repoOriginId = this.configService.get<string>('app.repoOriginId') || options?.repoOriginId;
+    const withReport = this.configService.get<boolean>('app.withReport') || options?.withReport;
 
     if (!repository) {
       this.logger.error('Please provide repository');
@@ -148,6 +158,6 @@ export class StatusCommand extends CommandRunner {
       });
     }
 
-    await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime);
+    await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime, withReport);
   }
 }

@@ -1,0 +1,50 @@
+name: 'myrror-security/myrror-cli'
+description: 'Myrror CLI is a command-line tool that uses the Myrror API to check the status of your projects.'
+author: 'Myrror Security'
+
+inputs:
+  MYRROR_API:
+    description: 'Your input description here'
+    required: true
+    default: 'World'
+  MYRROR_RETRY_TIME:
+    description: 'Your input description here'
+    required: false
+    default: 10000
+  MYRROR_TIMEOUT:
+    description: 'Your input description here'
+    required: false
+    default: 3600000
+  MYRROR_CLIENT_ID:
+    description: 'Your input description here'
+    required: true
+  MYRROR_CLIENT_SECRET:
+    description: 'Your input description here'
+    required: true
+  MYRROR_REPOSITORY:
+    description: 'Your input description here'
+    required: true
+  MYRROR_BRANCH:
+    description: 'Your input description here'
+    required: true
+  MYRROR_COMMIT:
+    description: 'Your input description here'
+    required: true
+
+# Define your outputs here.
+outputs:
+  greeting:
+    description: 'Your output description here'
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    MYRROR_API: ${{ inputs.MYRROR_API }}
+    MYRROR_RETRY_TIME: ${{ inputs.MYRROR_RETRY_TIME }}
+    MYRROR_TIMEOUT: ${{ inputs.MYRROR_TIMEOUT }}
+    MYRROR_CLIENT_ID: ${{ inputs.MYRROR_CLIENT_ID }}
+    MYRROR_CLIENT_SECRET: ${{ inputs.MYRROR_CLIENT_SECRET }}
+    MYRROR_REPOSITORY: ${{ inputs.MYRROR_REPOSITORY }}
+    MYRROR_BRANCH: ${{ inputs.MYRROR_BRANCH }}
+    MYRROR_COMMIT: ${{ inputs.MYRROR_COMMIT }}
