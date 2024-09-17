@@ -140,11 +140,10 @@ describe('StatusCommand', () => {
         'app.commit': commit,
       };
       return configMap[key];
-    }
-    );
+    });
 
     await statusCommand.run([]);
 
-    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/${stringToMd5(repository)}/${stringToMd5(branch)}/${commit}/status`, timeout, retryTime);
+    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/${stringToMd5(repository)}/${stringToMd5(branch)}/${commit}/status`, timeout, retryTime, undefined);
   });
 });
