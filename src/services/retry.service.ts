@@ -45,15 +45,12 @@ export class RetryService {
               this.logger.error('repoId or branchId is not provided');
               process.exit(1);
             }
-            const { issues, message } = await this.issuesService.getIssues(repoId, branchId);
+            const { issues, message, magicLink } = await this.issuesService.getIssues(repoId, branchId);
             if (issues.length === 0) {
               this.logger.log('No issues found');
               process.exit(0); // Exit with success
             } else {
-              await this.issuesService.drawIssuesTable(issues);
-              if (message) {
-                this.logger.log(message);
-              }
+              await this.issuesService.drawIssuesTable(issues, magicLink, message);
               process.exit(1);
             }
           } else {

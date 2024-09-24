@@ -35,7 +35,7 @@ export class IssuesService {
     }
   }
 
-  async drawIssuesTable(issues: IIssueResponse[]) {
+  async drawIssuesTable(issues: IIssueResponse[], magicLink?: string, message?: string) {
     const table = new Table();
 
     table.push([{ colSpan: 6, content: 'PR Issues', hAlign: 'center' }]);
@@ -46,7 +46,15 @@ export class IssuesService {
       table.push(this.transformIssueToRow(issue, index));
     });
 
+    if (magicLink) {
+      console.log(`Link to more details: ${magicLink}`);
+    }
+
     console.log(table.toString());
+
+    if (message) {
+      console.log(message);
+    }
   }
 
   transformIssueToRow(issue: IIssueResponse, index: number) {
