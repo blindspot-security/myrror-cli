@@ -175,7 +175,7 @@ describe('RetryService', () => {
     const logSpy = jest.spyOn(logger, 'log');
     (axios.get as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
 
-    (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({ issues: [issueMock] });
+    (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({ issues: [issueMock], message: 'message', magicLink: 'magicLink' });
 
     const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
       return code as never;
@@ -194,7 +194,7 @@ describe('RetryService', () => {
 
     expect(logSpy).toHaveBeenCalledWith('status is scanned');
     expect(issuesService.getIssues).toHaveBeenCalledWith('repoId', 'branchId');
-    expect(issuesService.drawIssuesTable).toHaveBeenCalledWith([issueMock]);
+    expect(issuesService.drawIssuesTable).toHaveBeenCalledWith([issueMock], 'magicLink', 'message');
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
