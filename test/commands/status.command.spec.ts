@@ -4,12 +4,14 @@ import { stringToMd5 } from '../../src/utils';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { CommandOptions } from 'src/types';
+import { WebhookService } from 'src/services';
 
 describe('StatusCommand', () => {
   let statusCommand: StatusCommand;
   let retryService: jest.Mocked<RetryService>;
   let configService: jest.Mocked<ConfigService>;
   let logger: jest.Mocked<Logger>;
+  let webhookService: jest.Mocked<WebhookService>;
 
   beforeEach(() => {
     retryService = {
@@ -28,7 +30,11 @@ describe('StatusCommand', () => {
       verbose: jest.fn(),
     } as any;
 
-    statusCommand = new StatusCommand(retryService, configService, logger);
+    webhookService = {
+      sendGitlabPullRequestData: jest.fn(),
+    } as any;
+
+    statusCommand = new StatusCommand(retryService, configService, webhookService, logger);
   });
 
   afterEach(() => {
@@ -122,6 +128,81 @@ describe('StatusCommand', () => {
     expect(logger.error).toHaveBeenCalledWith('Please provide commit');
   });
 
+  it('should error enabledSyntheticWebhooks is true and repoOriginId is not provided', async () => {
+    configService.get.mockImplementation((key: string) => {
+      switch (key) {
+        case 'app.repository':
+          return 'repository';
+        case 'app.branch':
+          return 'branch';
+        case 'app.commit':
+          return 'commit';
+        case 'app.enabledSyntheticWebhooks':
+          return true;
+        default:
+          return null;
+      }
+    });
+
+    await expect(statusCommand.run([])).rejects.toThrow('Please provide repoOriginId');
+    expect(logger.error).toHaveBeenCalledWith('Please provide repoOriginId');
+  });
+
+  it('should error enabledSyntheticWebhooks is true and pullRequestIid is not provided', async () => {
+    configService.get.mockImplementation((key: string) => {
+      switch (key) {
+        case 'app.repository':
+          return 'repository';
+        case 'app.branch':
+          return 'branch';
+        case 'app.commit':
+          return 'commit';
+        case 'app.enabledSyntheticWebhooks':
+          return true;
+        case 'app.repoOriginId':
+          return 'repoOriginId';
+        default:
+          return null;
+      }
+    });
+
+    await expect(statusCommand.run([])).rejects.toThrow('Please provide pullRequestIid');
+    expect(logger.error).toHaveBeenCalledWith('Please provide pullRequestIid');
+  });
+
+  it('should call sendGitlabPullRequestData with the correct parameters', async () => {
+    const url = 'http://localhost';
+    const timeout = 5000;
+    const retryTime = 1000;
+    const repository = 'repository';
+    const branch = 'branch';
+    const commit = 'commit';
+    const pullRequestIid = 'pullRequestIid';
+    const repoOriginId = 'repoOriginId';
+
+    configService.get.mockImplementation((key: string) => {
+      const configMap = {
+        'app.apiUrl': url,
+        'app.timeout': timeout,
+        'app.retryTime': retryTime,
+        'app.repository': repository,
+        'app.branch': branch,
+        'app.commit': commit,
+        'app.pullRequestIid': pullRequestIid,
+        'app.enabledSyntheticWebhooks': true,
+        'app.repoOriginId': repoOriginId,
+      };
+      return configMap[key];
+    });
+
+    await statusCommand.run([]);
+
+    expect(webhookService.sendGitlabPullRequestData).toHaveBeenCalledWith({
+      pullRequestIid,
+      repoOriginId,
+    });
+  });
+
   it('should call retryUntilSuccess with the correct parameters', async () => {
     const url = 'http://localhost';
     const timeout = 5000;
@@ -140,8 +221,7 @@ describe('StatusCommand', () => {
         'app.commit': commit,
       };
       return configMap[key];
-    }
-    );
+    });
 
     await statusCommand.run([]);
 
