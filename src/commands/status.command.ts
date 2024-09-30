@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CommandRunner, Command, Option } from 'nest-commander';
 
-import { RetryService } from '../services';
+import { RetryService, WebhookService } from '../services';
 import { CommandOptions } from '../types';
 import { stringToMd5 } from '../utils';
 
@@ -14,6 +14,7 @@ export class StatusCommand extends CommandRunner {
   constructor(
     private readonly retryService: RetryService,
     private configService: ConfigService,
+    private webhookService: WebhookService,
     private logger: Logger,
   ) {
     super();
@@ -49,6 +50,30 @@ export class StatusCommand extends CommandRunner {
   }
 
   @Option({
+    flags: '-pri, --pullRequestIid [string]',
+    required: false,
+  })
+  parsePullRequestIid(value: string): string {
+    return value;
+  }
+
+  @Option({
+    flags: '-roi, --repoOriginId [string]',
+    required: false,
+  })
+  parserRepoOriginId(value: string): string {
+    return value;
+  }
+
+  @Option({
+    flags: '-esw, --enabledSyntheticWebhooks [string]',
+    required: false,
+  })
+  parseEnabledSyntheticWebhooks(value: string): boolean {
+    return value === 'true';
+  }
+
+  @Option({
     flags: '-wr, --withReport [string]',
     required: false,
   })
@@ -70,9 +95,12 @@ export class StatusCommand extends CommandRunner {
         -c, --commit [string]               Specify the commit
         -rns, --rootNamespace [string]      Specify the root namespace
         -wr, --withReport [boolean]         Specify if the report should be generated
+        -pri, --pullRequestIid [string]     Specify the pull request iid
+        -roi, --repoOriginId [string]       Specify the repo origin id
+        -esw, --enabledSyntheticWebhooks    Specify if synthetic webhooks are enabled
   
       Examples:
-        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace -wr false
+        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace -wr false -pri your-pull-request-iid -roi your-repo-origin-id -esw true
     `);
     process.exit(0);
   }
@@ -85,6 +113,9 @@ export class StatusCommand extends CommandRunner {
     const rootNamespace = this.configService.get<string>('app.rootNamespace') || options?.rootNamespace;
     const branch = this.configService.get<string>('app.branch') || options?.branch;
     const commit = this.configService.get<string>('app.commit') || options?.commit;
+    const pullRequestIid = this.configService.get<string>('app.pullRequestIid') || options?.pullRequestIid;
+    const enabledSyntheticWebhooks = this.configService.get<boolean>('app.enabledSyntheticWebhooks') || options?.enabledSyntheticWebhooks;
+    const repoOriginId = this.configService.get<string>('app.repoOriginId') || options?.repoOriginId;
     const withReport = this.configService.get<boolean>('app.withReport') || options?.withReport;
 
     if (!repository) {
@@ -109,6 +140,23 @@ export class StatusCommand extends CommandRunner {
 
     const repositoryNameHash = stringToMd5(repository);
     const branchNameHash = stringToMd5(branch);
+
+    if (enabledSyntheticWebhooks) {
+      if (!repoOriginId) {
+        this.logger.error('Please provide repoOriginId');
+        throw new Error('Please provide repoOriginId');
+      }
+
+      if (!pullRequestIid) {
+        this.logger.error('Please provide pullRequestIid');
+        throw new Error('Please provide pullRequestIid');
+      }
+
+      await this.webhookService.sendGitlabPullRequestData({
+        pullRequestIid,
+        repoOriginId,
+      });
+    }
 
     await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime, withReport);
   }
