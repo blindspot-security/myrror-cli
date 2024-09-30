@@ -9,7 +9,7 @@ myrror-scan:
   variables:
     MYRROR_BRANCH: $CI_COMMIT_REF_NAME
     MYRROR_COMMIT: $CI_COMMIT_SHA
-    MYRROR_CI_ARTIFACT_DIR: $CI_PROJECT_DIR
+    MYRROR_CI_ARTIFACT_DIR: "$CI_PROJECT_DIR/reports"
   artifacts:
     when: on_failure
     expose_as: 'report'

@@ -115,9 +115,8 @@ export class ReportService {
       await new Promise((resolve) => setTimeout(resolve, retryTime));
 
       const link = await this.getLinkUntilSuccess(reportId, maxExecutionTime, retryTime);
-      const projectArtifact = this.configService.get<string>('app.projectArtifact') || __dirname;
-      const directory = path.join(projectArtifact, 'reports');
-      await this.downloadAndSaveReportFile(link, directory);
+      const projectArtifactDir = this.configService.get<string>('app.projectArtifactDir') || path.join(__dirname, 'reports');
+      await this.downloadAndSaveReportFile(link, projectArtifactDir);
     } catch (error) {
       this.logger.error('Error saving the report:', error);
       throw error;
