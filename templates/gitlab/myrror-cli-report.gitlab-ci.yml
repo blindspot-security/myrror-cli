@@ -9,9 +9,9 @@ myrror-scan:
   variables:
     MYRROR_BRANCH: $CI_COMMIT_REF_NAME
     MYRROR_COMMIT: $CI_COMMIT_SHA
-    MYRROR_CI_PROJECT_DIR: $CI_PROJECT_DIR
+    MYRROR_CI_ARTIFACT_DIR: $CI_PROJECT_DIR
   artifacts:
     when: on_failure
-    expose_as: "report"
-    paths: ["reports/report.csv"]
+    expose_as: 'report'
+    paths: ['reports/report.csv']
     expire_in: 1 week
