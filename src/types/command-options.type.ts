@@ -6,4 +6,5 @@ export type CommandOptions = {
   pullRequestIid?: string;
   repoOriginId?: string;
   enabledSyntheticWebhooks?: boolean;
+  withReport?: boolean;
 };

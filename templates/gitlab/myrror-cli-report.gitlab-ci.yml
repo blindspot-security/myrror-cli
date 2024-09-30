@@ -1,0 +1,17 @@
+myrror-scan:
+  stage: test
+  image: myrrorsecurity/myrror-cli:latest
+  before_script:
+    - MYRROR_REPOSITORY=$CI_PROJECT_PATH
+    - MYRROR_ROOT_NAMESPACE=$CI_PROJECT_ROOT_NAMESPACE
+  script:
+    - node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT -rns $MYRROR_ROOT_NAMESPACE -wr true
+  variables:
+    MYRROR_BRANCH: $CI_COMMIT_REF_NAME
+    MYRROR_COMMIT: $CI_COMMIT_SHA
+    MYRROR_CI_ARTIFACT_DIR: "$CI_PROJECT_DIR/reports"
+  artifacts:
+    when: on_failure
+    expose_as: 'report'
+    paths: ['reports/report.csv']
+    expire_in: 1 week

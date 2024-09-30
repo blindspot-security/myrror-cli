@@ -5,6 +5,7 @@ import { IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
 import { IssuesService } from './issues.service';
 import { EScanningStatus } from '../types/scanning-status.enum';
+import { ReportService } from './report.service';
 
 @Injectable()
 export class RetryService {
@@ -12,12 +13,13 @@ export class RetryService {
     private logger: Logger,
     private authService: AuthService,
     private issuesService: IssuesService,
+    private reportService: ReportService,
   ) {}
 
   continueStatuses = [EScanningStatus.WAITING, EScanningStatus.SCANNING];
   abortStatuses = [EScanningStatus.SKIPPED, EScanningStatus.SCANNED];
 
-  async retryUntilSuccess(url: string, maxExecutionTime: number, retryTime: number) {
+  async retryUntilSuccess(url: string, maxExecutionTime: number, retryTime: number, withReport: boolean) {
     const timeout = setTimeout(() => {
       this.logger.error('execution time exceeded. Stopping...');
       process.exit(1);
@@ -51,6 +53,10 @@ export class RetryService {
               process.exit(0); // Exit with success
             } else {
               await this.issuesService.drawIssuesTable(issues, magicLink, message);
+
+              if (withReport) {
+                await this.reportService.saveReport(repoId, branchId, maxExecutionTime, retryTime);
+              }
               process.exit(1);
             }
           } else {

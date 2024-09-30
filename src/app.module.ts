@@ -3,6 +3,7 @@ import { AuthService, IssuesService, RetryService, WebhookService } from './serv
 import { StatusCommand } from './commands';
 import { ConfigModule } from '@nestjs/config';
 import { appConfig } from './config';
+import { ReportService } from './services/report.service';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { appConfig } from './config';
       },
     }),
   ],
-  providers: [WebhookService, RetryService, AuthService, IssuesService, StatusCommand, Logger],
+  providers: [RetryService, AuthService, IssuesService, StatusCommand, Logger, ReportService, WebhookService],
 })
 export class AppModule {}
