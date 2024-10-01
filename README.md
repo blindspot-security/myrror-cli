@@ -19,7 +19,7 @@ To configure the project, you need to set the following environment variables:
 ```bash
 MYRROR_CLIENT_ID='your-client-id'
 MYRROR_SECRET='your-secret'
-MYRROR_API='https://api.blindspot-security.com/v1'
+MYRROR_API='https://api.myrror.security/v1'
 MYRROR_REPOSITORY= # optional your repository name
 MYRROR_BRANCH= # optional your branch name
 MYRROR_COMMIT= # optional your commit hash
@@ -85,7 +85,6 @@ pipelines:
                 export MYRROR_COMMIT=$BITBUCKET_COMMIT
                 export MYRROR_CLIENT_ID=$MYRROR_CLIENT_ID
                 export MYRROR_SECRET=$MYRROR_SECRET
-                export MYRROR_API="https://api.ls.blindspot-security.com/v1"
                 node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
               else
                 echo "Not running Myrror scan, as this is not a PR to YOUR_MAIN_BRANCH"
