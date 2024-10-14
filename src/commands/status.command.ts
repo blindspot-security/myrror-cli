@@ -138,9 +138,6 @@ export class StatusCommand extends CommandRunner {
       repository = repository.replace(regex, '');
     }
 
-    const repositoryNameHash = stringToMd5(repository);
-    const branchNameHash = stringToMd5(branch);
-
     if (enabledSyntheticWebhooks) {
       if (!repoOriginId) {
         this.logger.error('Please provide repoOriginId');
@@ -157,7 +154,12 @@ export class StatusCommand extends CommandRunner {
         repoOriginId,
       });
     }
+    const payload = {
+      repositoryName: repository,
+      branchName: branch,
+      commitSha: commit,
+    };
 
-    await this.retryService.retryUntilSuccess(`${url}/repositories/${repositoryNameHash}/${branchNameHash}/${commit}/status`, timeout, retryTime, withReport);
+    await this.retryService.retryUntilSuccess(`${url}/scm/commit/scan/status`, payload, timeout, retryTime, withReport);
   }
 }

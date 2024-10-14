@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
-import { IStatusResponse } from '../types';
+import { ICommitScanStatusPayload, IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
 import { IssuesService } from './issues.service';
 import { EScanningStatus } from '../types/scanning-status.enum';
@@ -19,7 +19,7 @@ export class RetryService {
   continueStatuses = [EScanningStatus.WAITING, EScanningStatus.SCANNING];
   abortStatuses = [EScanningStatus.SKIPPED, EScanningStatus.SCANNED];
 
-  async retryUntilSuccess(url: string, maxExecutionTime: number, retryTime: number, withReport: boolean) {
+  async retryUntilSuccess(url: string, payload: ICommitScanStatusPayload, maxExecutionTime: number, retryTime: number, withReport: boolean) {
     const timeout = setTimeout(() => {
       this.logger.error('execution time exceeded. Stopping...');
       process.exit(1);
@@ -29,7 +29,7 @@ export class RetryService {
       try {
         const token = await this.authService.getToken();
 
-        const response = await axios.get<IStatusResponse>(url, {
+        const response = await axios.post<IStatusResponse>(url, payload, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -61,6 +61,7 @@ export class RetryService {
             }
           } else {
             this.logger.error(`Scan was ${response.data?.status || 'aborted'}`);
+            this.logger.error(response.data?.message);
             process.exit(1);
           }
         } else if (this.continueStatuses.includes(response.data.status)) {
@@ -81,5 +82,4 @@ export class RetryService {
       }
     }, retryTime);
   }
-
 }
