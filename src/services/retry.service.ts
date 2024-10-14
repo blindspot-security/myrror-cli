@@ -41,7 +41,7 @@ export class RetryService {
           clearInterval(interval);
           clearTimeout(timeout);
 
-          if (response.data?.status === EScanningStatus.SCANNED) {
+          if (response?.data?.status === EScanningStatus.SCANNED) {
             const { repoId, branchId } = response.data;
             if (!repoId || !branchId) {
               this.logger.error('repoId or branchId is not provided');
