@@ -4,8 +4,6 @@ import { CommandRunner, Command, Option } from 'nest-commander';
 
 import { RetryService, WebhookService } from '../services';
 import { CommandOptions } from '../types';
-import { stringToMd5 } from '../utils';
-
 @Command({
   name: 'status',
   options: { isDefault: true },
