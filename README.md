@@ -19,7 +19,6 @@ To configure the project, you need to set the following environment variables:
 ```bash
 MYRROR_CLIENT_ID='your-client-id'
 MYRROR_SECRET='your-secret'
-MYRROR_API='https://api.myrror.security/v1'
 MYRROR_REPOSITORY= # optional your repository name
 MYRROR_BRANCH= # optional your branch name
 MYRROR_COMMIT= # optional your commit hash
@@ -51,9 +50,16 @@ include: 'https://raw.githubusercontent.com/blindspot-security/myrror-cli/main/t
 variables:
   MYRROR_CLIENT_ID: 'your-client-id'
   MYRROR_SECRET: 'your-secret'
+
+myrror-scan:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
 ```
 
 Replace 'your-client-id' and 'your-secret' with the actual values. It is recommended to use secret values for these variables.
+Use myrror-scan rules to specify the branches you want to scan. In this example, the scan will run only for the main and develop branches.
+(Without the rules, the scan CLI will run for all branches)
 
 ## Bitbucket Integration
 
