@@ -229,6 +229,6 @@ describe('StatusCommand', () => {
 
     await statusCommand.run([]);
 
-    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/scm/commit/scan/status`, payload, timeout, retryTime, undefined);
+    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/commit/scan/status`, payload, timeout, retryTime, undefined);
   });
 });

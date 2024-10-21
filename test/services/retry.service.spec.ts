@@ -168,7 +168,7 @@ describe('RetryService', () => {
     }
 
     expect(logSpy).toHaveBeenCalledWith('status is skipped');
-    expect(processExitSpy).toHaveBeenCalledWith(1);
+    expect(processExitSpy).toHaveBeenCalledWith(0);
   });
 
   it('should draw issues table when issues are found', async () => {
