@@ -1,6 +1,5 @@
 import { StatusCommand } from '../../src/commands/status.command';
 import { RetryService } from '../../src/services/retry.service';
-import { stringToMd5 } from '../../src/utils';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { CommandOptions } from 'src/types';
@@ -210,6 +209,11 @@ describe('StatusCommand', () => {
     const repository = 'repository';
     const branch = 'branch';
     const commit = 'commit';
+    const payload = {
+      repositoryName: repository,
+      branchName: branch,
+      commitSha: commit,
+    };
 
     configService.get.mockImplementation((key: string) => {
       const configMap = {
@@ -225,6 +229,6 @@ describe('StatusCommand', () => {
 
     await statusCommand.run([]);
 
-    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/${stringToMd5(repository)}/${stringToMd5(branch)}/${commit}/status`, timeout, retryTime, undefined);
+    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/commit/scan/status`, payload, timeout, retryTime, undefined);
   });
 });
