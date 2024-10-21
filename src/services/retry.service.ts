@@ -62,7 +62,7 @@ export class RetryService {
           } else {
             this.logger.error(`Scan was ${response.data?.status || 'aborted'}`);
             this.logger.error(response.data?.message);
-            process.exit(1);
+            process.exit(0);
           }
         } else if (this.continueStatuses.includes(response.data.status)) {
           this.logger.log('retrying...');

@@ -158,6 +158,6 @@ export class StatusCommand extends CommandRunner {
       commitSha: commit,
     };
 
-    await this.retryService.retryUntilSuccess(`${url}/scm/commit/scan/status`, payload, timeout, retryTime, withReport);
+    await this.retryService.retryUntilSuccess(`${url}/repositories/commit/scan/status`, payload, timeout, retryTime, withReport);
   }
 }
