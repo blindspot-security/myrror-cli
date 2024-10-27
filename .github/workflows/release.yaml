@@ -48,4 +48,12 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: myrrorsecurity/myrror-cli:${{ steps.semantic.outputs.release-version }},myrrorsecurity/myrror-cli:latest
+          tags: myrrorsecurity/myrror-cli:${{ steps.semantic.outputs.release-version }}
+      - name: Tag as latest if on main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: myrrorsecurity/myrror-cli:latest
