@@ -24,7 +24,7 @@ export class WebhookService {
       });
       return response?.data;
     } catch (error) {
-      this.logger.error(error.message);
+      this.logger.error(error?.response?.data?.message || error.message);
       process.exit(1);
     }
   }
