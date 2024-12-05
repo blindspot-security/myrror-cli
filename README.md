@@ -152,9 +152,9 @@ npm run status -- -r your-repository -b your-branch -c your-commit
 > myrror-cli@0.0.1 status
 > node dist/main status -r your-repository -b your-branch -c your-commit
 
-[Nest] 56826  - 03/05/2024, 3:55:16 PM     LOG status is pending
-[Nest] 56826  - 03/05/2024, 3:55:16 PM     LOG retrying...
-[Nest] 56826  - 03/05/2024, 3:55:26 PM     LOG status is scanned
+[Nest] 56826  - 03/05/2024, 3:55:16 PM     LOG Waiting for scan to start...
+[Nest] 56826  - 03/05/2024, 3:55:16 PM     LOG Scanning In Progress...
+[Nest] 56826  - 03/05/2024, 3:55:26 PM     LOG Scanning Completed
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                                  PR Issues                                   │
 ├───┬────────────────────────┬──────────┬─────────────────┬────────────────────┤
