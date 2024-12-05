@@ -83,8 +83,11 @@ describe('RetryService', () => {
     const retryTime = 100;
 
     const logSpy = jest.spyOn(logger, 'log');
-    (axios.post as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.WAITING } });
-    (axios.post as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
+    (axios.post as jest.Mock)
+        .mockResolvedValueOnce({ data: { status: EScanningStatus.WAITING } })
+        .mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNING } })
+        .mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
+
     (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({ issues: [] });
 
     const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
@@ -94,7 +97,7 @@ describe('RetryService', () => {
     const promise = service.retryUntilSuccess(url, payload, maxExecutionTime, retryTime, false);
 
     // Wait for the interval to be executed twice
-    await new Promise((resolve) => setTimeout(resolve, retryTime * 3));
+    await new Promise((resolve) => setTimeout(resolve, retryTime * 4));
 
     try {
       await promise;
@@ -103,11 +106,11 @@ describe('RetryService', () => {
     }
 
     expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
-    expect(logSpy).toHaveBeenCalledWith('retrying...');
+    expect(logSpy).toHaveBeenCalledWith('Scanning In Progress...');
     expect(logSpy).toHaveBeenCalledWith('Scanning Completed');
-    expect(axios.post).toHaveBeenCalledTimes(2);
+    expect(axios.post).toHaveBeenCalledTimes(3);
     expect(processExitSpy).toHaveBeenCalledWith(0);
-    expect(axios.post).toHaveBeenCalledTimes(2);
+    expect(axios.post).toHaveBeenCalledTimes(3);
   });
 
   it('should create a report when scan is completed', async () => {
