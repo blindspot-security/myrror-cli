@@ -102,9 +102,9 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('status is waiting');
-    expect(logSpy).toHaveBeenCalledWith('retrying...');
-    expect(logSpy).toHaveBeenCalledWith('status is scanned');
+    expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
+    expect(logSpy).toHaveBeenCalledWith('Scanning In Progress...');
+    expect(logSpy).toHaveBeenCalledWith('Scanning Completed');
     expect(axios.post).toHaveBeenCalledTimes(2);
     expect(processExitSpy).toHaveBeenCalledWith(0);
     expect(axios.post).toHaveBeenCalledTimes(2);
@@ -137,12 +137,12 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('status is scanned');
+    expect(logSpy).toHaveBeenCalledWith('Scanning Completed');
     expect(reportService.saveReport).toHaveBeenCalledWith('repoId', 'branchId', maxExecutionTime, retryTime);
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
-  it('should exit process when status is not scanned', async () => {
+  it('should exit process when status is not Scaning Completed', async () => {
     jest.useRealTimers(); // Use real timers in this test
 
     const url = 'http://example.com';
@@ -167,7 +167,7 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('status is skipped');
+    expect(logSpy).toHaveBeenCalledWith('Scanning Skipped');
     expect(processExitSpy).toHaveBeenCalledWith(0);
   });
 
@@ -198,7 +198,7 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('status is scanned');
+    expect(logSpy).toHaveBeenCalledWith('Scanning Completed');
     expect(issuesService.getIssues).toHaveBeenCalledWith('repoId', 'branchId');
     expect(issuesService.drawIssuesTable).toHaveBeenCalledWith([issueMock], 'magicLink', 'message');
     expect(processExitSpy).toHaveBeenCalledWith(1);
@@ -232,9 +232,9 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('status is waiting');
-    expect(logSpy).toHaveBeenCalledWith('status is waiting');
-    expect(logSpy).toHaveBeenCalledWith('status is waiting');
+    expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
+    expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
+    expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
 
     expect(axios.post).toHaveBeenCalled();
     expect(processExitSpy).toHaveBeenCalled();

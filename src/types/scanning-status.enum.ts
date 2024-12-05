@@ -1,6 +1,6 @@
 export enum EScanningStatus {
-  SCANNED = 'scanned',
-  SCANNING = 'scanning',
-  SKIPPED = 'skipped',
-  WAITING = 'waiting',
+  SCANNED = 'Scanning Completed',
+  SCANNING = 'Scanning In Progress...',
+  SKIPPED = 'Scanning Skipped',
+  WAITING = 'Waiting for scan to start...',
 }
