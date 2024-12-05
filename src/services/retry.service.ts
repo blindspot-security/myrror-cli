@@ -64,6 +64,8 @@ export class RetryService {
             this.logger.error(response.data?.message);
             process.exit(0);
           }
+        } else if (this.continueStatuses.includes(response.data.status)) {
+          this.logger.debug('retrying...');
         }
       } catch (error) {
         if (error.response?.status === 401) {

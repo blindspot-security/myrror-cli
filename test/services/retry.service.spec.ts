@@ -103,7 +103,7 @@ describe('RetryService', () => {
     }
 
     expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
-    expect(logSpy).toHaveBeenCalledWith('Scanning In Progress...');
+    expect(logSpy).toHaveBeenCalledWith('retrying...');
     expect(logSpy).toHaveBeenCalledWith('Scanning Completed');
     expect(axios.post).toHaveBeenCalledTimes(2);
     expect(processExitSpy).toHaveBeenCalledWith(0);
