@@ -4,7 +4,8 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { RetryService, AuthService, IssuesService, ReportService } from '../../src/services';
-import { EScanningStatus, FriendlyStatusMessages } from '../../src/types/scanning-status.enum';
+import { EScanningStatus } from '../../src/types/scanning-status.enum';
+import { FriendlyStatusMessages } from '../../src/types/friendly-status-messages.const';
 
 jest.mock('axios');
 

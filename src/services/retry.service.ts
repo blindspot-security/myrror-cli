@@ -4,7 +4,8 @@ import axios from 'axios';
 import { ICommitScanStatusPayload, IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
 import { IssuesService } from './issues.service';
-import { EScanningStatus, FriendlyStatusMessages } from '../types/scanning-status.enum';
+import { EScanningStatus } from '../types/scanning-status.enum';
+import { FriendlyStatusMessages } from '../types/friendly-status-messages.const';
 import { ReportService } from './report.service';
 
 @Injectable()
