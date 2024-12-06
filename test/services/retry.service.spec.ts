@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { RetryService, AuthService, IssuesService, ReportService } from '../../src/services';
 import { EScanningStatus } from '../../src/types/scanning-status.enum';
+import { FriendlyStatusMessages } from '../../src/types/friendly-status-messages.const';
 
 jest.mock('axios');
 
@@ -105,9 +106,9 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
-    expect(logSpy).toHaveBeenCalledWith('Scanning In Progress...');
-    expect(logSpy).toHaveBeenCalledWith('Scanning Completed');
+    expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.WAITING]);
+    expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.SCANNING]);
+    expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.SCANNED]);
     expect(axios.post).toHaveBeenCalledTimes(3);
     expect(processExitSpy).toHaveBeenCalledWith(0);
     expect(axios.post).toHaveBeenCalledTimes(3);
@@ -170,7 +171,7 @@ describe('RetryService', () => {
       expect(error.message).toBe('Process exited');
     }
 
-    expect(logSpy).toHaveBeenCalledWith('Scanning Skipped');
+    expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.SKIPPED]);
     expect(processExitSpy).toHaveBeenCalledWith(0);
   });
 
