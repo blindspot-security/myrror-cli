@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ICommitScanStatusPayload, IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
 import { IssuesService } from './issues.service';
-import { EScanningStatus } from '../types/scanning-status.enum';
+import { EScanningStatus, FriendlyStatusMessages } from '../types/scanning-status.enum';
 import { ReportService } from './report.service';
 
 @Injectable()
@@ -35,7 +35,8 @@ export class RetryService {
           },
         });
 
-        this.logger.log(`${response.data?.status}`);
+        this.logger.log(FriendlyStatusMessages[response.data?.status] || response.data?.status);
+
 
         if (!response.data || this.abortStatuses.includes(response.data.status)) {
           clearInterval(interval);
