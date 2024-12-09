@@ -10,6 +10,7 @@ To install this project, you need to clone the repository and install all necess
 git clone https://github.com/user/myrror-cli.git
 cd myrror-cli
 npm install
+npm link
 ```
 
 ## Configuration
@@ -91,7 +92,7 @@ pipelines:
                 export MYRROR_COMMIT=$BITBUCKET_COMMIT
                 export MYRROR_CLIENT_ID=$MYRROR_CLIENT_ID
                 export MYRROR_SECRET=$MYRROR_SECRET
-                node /usr/src/app/dist/main status -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
+                myrror-cli -r $MYRROR_REPOSITORY -b $MYRROR_BRANCH -c $MYRROR_COMMIT
               else
                 echo "Not running Myrror scan, as this is not a PR to YOUR_MAIN_BRANCH"
               fi
@@ -117,7 +118,7 @@ npm run build
 After building, you can run the CLI as follows:
 
 ```bash
-npm run status -- -r your-repository -b your-branch -c your-commit
+myrror-cli -r your-repository -b your-branch -c your-commit
 ```
 
 ### Help Command
@@ -125,13 +126,13 @@ npm run status -- -r your-repository -b your-branch -c your-commit
 You can use the `--help` command to get information about how to use the CLI:
 
 ```bash
-npm run status -- --help
+myrror-cli --help
 ```
 
 This will display information about the available options and how to use them:
 
 ```
-Usage: npm run status -- [options]
+Usage: myrror-cli [options]
 
 Options:
   -r, --repository [string]  Specify the repository
@@ -139,7 +140,7 @@ Options:
   -c, --commit [string]      Specify the commit
 
 Examples:
-  npm run status -- -r your-repository -b your-branch -c your-commit
+  myrror-cli -r your-repository -b your-branch -c your-commit
 ```
 
 ### Example
@@ -147,10 +148,10 @@ Examples:
 Here is an example of how the CLI works:
 
 ```bash
-npm run status -- -r your-repository -b your-branch -c your-commit
+myrror-cli -r your-repository -b your-branch -c your-commit
 
 > myrror-cli@0.0.1 status
-> node dist/main status -r your-repository -b your-branch -c your-commit
+> myrror-cli -r your-repository -b your-branch -c your-commit
 
 [Nest] 56826  - 03/05/2024, 3:55:16 PM     LOG Waiting for scan to start...
 [Nest] 56826  - 03/05/2024, 3:55:16 PM     LOG Scanning In Progress...
