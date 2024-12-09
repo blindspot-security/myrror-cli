@@ -1,13 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import axios from 'axios';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-
-import { RetryService, AuthService, IssuesService, ReportService } from '../../src/services';
+import { RetryService, IssuesService, ReportService, AuthService } from '../../src/services';
 import { EScanningStatus } from '../../src/types/scanning-status.enum';
 import { FriendlyStatusMessages } from '../../src/types/friendly-status-messages.const';
-
-jest.mock('axios');
+import { HttpRetryService } from '../../src/utils';
+import { ConfigService } from '@nestjs/config';
 
 const mockConfigService = {
   get: jest.fn().mockReturnValue('someConfigValue'),
@@ -24,6 +21,13 @@ const mockReportService = {
 const mockIssuesService = {
   getIssues: jest.fn(),
   drawIssuesTable: jest.fn(),
+};
+
+const mockHttpRetryService = {
+  axiosRef: {
+    post: jest.fn(),
+    get: jest.fn(),
+  },
 };
 
 const issueMock = {
@@ -48,6 +52,11 @@ describe('RetryService', () => {
   let authService: AuthService;
   let issuesService: IssuesService;
   let reportService: ReportService;
+  let httpRetryService: HttpRetryService;
+
+  beforeAll(() => {
+    process.env.MYRROR_API = 'http://localhost';
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -56,6 +65,7 @@ describe('RetryService', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: IssuesService, useValue: mockIssuesService },
+        { provide: HttpRetryService, useValue: mockHttpRetryService },
         Logger,
         RetryService,
       ],
@@ -66,6 +76,7 @@ describe('RetryService', () => {
     logger = module.get<Logger>(Logger);
     authService = module.get<AuthService>(AuthService);
     issuesService = module.get<IssuesService>(IssuesService);
+    httpRetryService = module.get<HttpRetryService>(HttpRetryService);
   });
 
   afterEach(() => {
@@ -79,15 +90,14 @@ describe('RetryService', () => {
   it('should retry until success', async () => {
     jest.useRealTimers(); // Use real timers in this test
 
-    const url = 'http://example.com';
     const maxExecutionTime = 500;
     const retryTime = 100;
 
     const logSpy = jest.spyOn(logger, 'log');
-    (axios.post as jest.Mock)
-        .mockResolvedValueOnce({ data: { status: EScanningStatus.WAITING } })
-        .mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNING } })
-        .mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
+    (httpRetryService.axiosRef.post as jest.Mock)
+      .mockResolvedValueOnce({ data: { status: EScanningStatus.WAITING } })
+      .mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNING } })
+      .mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
 
     (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({ issues: [] });
 
@@ -95,7 +105,7 @@ describe('RetryService', () => {
       return code as never;
     });
 
-    const promise = service.retryUntilSuccess(url, payload, maxExecutionTime, retryTime, false);
+    const promise = service.retryUntilSuccess('test', payload, maxExecutionTime, retryTime, false);
 
     // Wait for the interval to be executed twice
     await new Promise((resolve) => setTimeout(resolve, retryTime * 4));
@@ -109,20 +119,26 @@ describe('RetryService', () => {
     expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.WAITING]);
     expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.SCANNING]);
     expect(logSpy).toHaveBeenCalledWith(FriendlyStatusMessages[EScanningStatus.SCANNED]);
-    expect(axios.post).toHaveBeenCalledTimes(3);
+    expect(httpRetryService.axiosRef.post).toHaveBeenCalledTimes(3);
     expect(processExitSpy).toHaveBeenCalledWith(0);
-    expect(axios.post).toHaveBeenCalledTimes(3);
+    expect(httpRetryService.axiosRef.post).toHaveBeenCalledTimes(3);
   });
 
   it('should create a report when scan is completed', async () => {
     jest.useRealTimers(); // Use real timers in this test
 
-    const url = 'http://example.com';
+    const url = 'https://example.com';
     const maxExecutionTime = 500;
     const retryTime = 100;
 
     const logSpy = jest.spyOn(logger, 'log');
-    (axios.post as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
+    (httpRetryService.axiosRef.post as jest.Mock).mockResolvedValueOnce({
+      data: {
+        status: EScanningStatus.SCANNED,
+        repoId: 'repoId',
+        branchId: 'branchId',
+      },
+    });
 
     (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({ issues: [issueMock] });
 
@@ -146,15 +162,15 @@ describe('RetryService', () => {
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
-  it('should exit process when status is not Scaning Completed', async () => {
+  it('should exit process when status is not Scanning Completed', async () => {
     jest.useRealTimers(); // Use real timers in this test
 
-    const url = 'http://example.com';
+    const url = 'https://example.com';
     const maxExecutionTime = 500;
     const retryTime = 100;
 
     const logSpy = jest.spyOn(logger, 'log');
-    (axios.post as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.SKIPPED } });
+    (httpRetryService.axiosRef.post as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.SKIPPED } });
 
     const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
       return code as never;
@@ -178,14 +194,24 @@ describe('RetryService', () => {
   it('should draw issues table when issues are found', async () => {
     jest.useRealTimers(); // Use real timers in this test
 
-    const url = 'http://example.com';
+    const url = 'https://example.com';
     const maxExecutionTime = 500;
     const retryTime = 100;
 
     const logSpy = jest.spyOn(logger, 'log');
-    (axios.post as jest.Mock).mockResolvedValueOnce({ data: { status: EScanningStatus.SCANNED, repoId: 'repoId', branchId: 'branchId' } });
+    (httpRetryService.axiosRef.post as jest.Mock).mockResolvedValueOnce({
+      data: {
+        status: EScanningStatus.SCANNED,
+        repoId: 'repoId',
+        branchId: 'branchId',
+      },
+    });
 
-    (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({ issues: [issueMock], message: 'message', magicLink: 'magicLink' });
+    (issuesService.getIssues as jest.Mock).mockResolvedValueOnce({
+      issues: [issueMock],
+      message: 'message',
+      magicLink: 'magicLink',
+    });
 
     const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
       return code as never;
@@ -211,7 +237,7 @@ describe('RetryService', () => {
   it('should exit process when max execution time is exceeded', async () => {
     jest.useRealTimers(); // Use real timers in this test
 
-    const url = 'http://example.com';
+    const url = 'https://example.com';
     const payload = {
       repositoryName: 'repository',
       branchName: 'branch',
@@ -220,7 +246,7 @@ describe('RetryService', () => {
     const maxExecutionTime = 300;
     const retryTime = 100;
 
-    (axios.post as jest.Mock).mockResolvedValue({ data: { status: EScanningStatus.WAITING } });
+    (httpRetryService.axiosRef.post as jest.Mock).mockResolvedValue({ data: { status: EScanningStatus.WAITING } });
     const logSpy = jest.spyOn(logger, 'log');
 
     const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
@@ -240,7 +266,7 @@ describe('RetryService', () => {
     expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
     expect(logSpy).toHaveBeenCalledWith('Waiting for scan to start...');
 
-    expect(axios.post).toHaveBeenCalled();
+    expect(httpRetryService.axiosRef.post).toHaveBeenCalled();
     expect(processExitSpy).toHaveBeenCalled();
   });
 });

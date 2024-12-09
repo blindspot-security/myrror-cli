@@ -104,7 +104,6 @@ export class StatusCommand extends CommandRunner {
   }
 
   async run(passedParams: string[], options?: CommandOptions): Promise<void> {
-    const url = this.configService.get<string>('app.apiUrl');
     const timeout = this.configService.get<number>('app.timeout');
     const retryTime = this.configService.get<number>('app.retryTime');
     let repository = this.configService.get<string>('app.repository') || options?.repository;
@@ -158,6 +157,6 @@ export class StatusCommand extends CommandRunner {
       commitSha: commit,
     };
 
-    await this.retryService.retryUntilSuccess(`${url}/repositories/commit/scan/status`, payload, timeout, retryTime, withReport);
+    await this.retryService.retryUntilSuccess(`/repositories/commit/scan/status`, payload, timeout, retryTime, withReport);
   }
 }

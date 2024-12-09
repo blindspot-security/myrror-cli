@@ -1,25 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 
 import { ITokenResponse } from 'src/types';
+import { HttpRetryService } from '../utils';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private configService: ConfigService,
-    private logger: Logger,
+    private readonly configService: ConfigService,
+    private readonly logger: Logger,
+    private readonly httpRetryService: HttpRetryService,
   ) {}
-  token: string;
-  expiredAt: number;
+  private token: string;
+  private expiredAt: number;
 
   private async setToken() {
     try {
-      const url = this.configService.get<string>('app.apiUrl');
       const clientId = this.configService.get<string>('app.clientId');
       const clientSecret = this.configService.get<string>('app.clientSecret');
 
-      const response = await axios.post<ITokenResponse>(`${url}/org/tokens/authenticate`, {
+      const response = await this.httpRetryService.axiosRef.post<ITokenResponse>(`/org/tokens/authenticate`, {
         clientId: clientId,
         clientSecret: clientSecret,
       });
