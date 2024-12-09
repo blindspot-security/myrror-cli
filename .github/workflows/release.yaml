@@ -4,7 +4,8 @@ on:
     branches:
       - main
       - beta
-      - alpha 
+      - alpha
+      - fix/ADP-3317_removenpm_plugin
 
 permissions:
   contents: read
