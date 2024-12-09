@@ -1,26 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 
 import { AuthService } from './auth.service';
+import { HttpRetryService } from '../utils';
 
 @Injectable()
 export class ReportService {
   constructor(
-    private logger: Logger,
-    private authService: AuthService,
-    private configService: ConfigService,
+    private readonly logger: Logger,
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+    private readonly httpRetryService: HttpRetryService,
   ) {}
 
   async createReport(repoId, branchId) {
     try {
-      const url = this.configService.get<string>('app.apiUrl');
       const token = await this.authService.getToken();
 
-      const response = await axios.post<{ uuid: string }>(
-        `${url}/report`,
+      const response = await this.httpRetryService.axiosRef.post<{ uuid: string }>(
+        `report`,
         {
           type: 'cliIssues',
           filters: {
@@ -49,12 +49,10 @@ export class ReportService {
     }
   }
 
-  async getDownloadReportLink(reportId: string) {
+  async getDownloadReportLink(reportId: string): Promise<string> {
     try {
-      const url = `${this.configService.get<string>('app.apiUrl')}/report/${reportId}/link`;
-      console.log('getDownloadReportLink url: ', url);
       const token = await this.authService.getToken();
-      const link = await axios.get(url, {
+      const link = await this.httpRetryService.axiosRef.get(`/report/${reportId}/link`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'text',
@@ -68,7 +66,7 @@ export class ReportService {
     }
   }
 
-  async getLinkUntilSuccess(url: string, maxExecutionTime: number, retryTime: number) {
+  async getLinkUntilSuccess(url: string, maxExecutionTime: number, retryTime: number): Promise<string> {
     try {
       return await this.getDownloadReportLink(url);
     } catch (error) {
@@ -85,7 +83,7 @@ export class ReportService {
         fs.mkdirSync(directory, { recursive: true });
       }
 
-      const response = await axios.get(url, { responseType: 'stream' });
+      const response = await this.httpRetryService.axiosRef.get(url, { responseType: 'stream' });
       const filename = 'report.csv';
 
       const filePath = path.join(directory, filename);

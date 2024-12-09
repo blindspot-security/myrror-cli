@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios from 'axios';
 
 import { ICommitScanStatusPayload, IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
@@ -7,14 +6,16 @@ import { IssuesService } from './issues.service';
 import { EScanningStatus } from '../types/scanning-status.enum';
 import { FriendlyStatusMessages } from '../types/friendly-status-messages.const';
 import { ReportService } from './report.service';
+import { HttpRetryService } from '../utils';
 
 @Injectable()
 export class RetryService {
   constructor(
-    private logger: Logger,
-    private authService: AuthService,
-    private issuesService: IssuesService,
-    private reportService: ReportService,
+    private readonly logger: Logger,
+    private readonly authService: AuthService,
+    private readonly issuesService: IssuesService,
+    private readonly reportService: ReportService,
+    private readonly httpRetryService: HttpRetryService,
   ) {}
 
   continueStatuses = [EScanningStatus.WAITING, EScanningStatus.SCANNING];
@@ -30,7 +31,7 @@ export class RetryService {
       try {
         const token = await this.authService.getToken();
 
-        const response = await axios.post<IStatusResponse>(url, payload, {
+        const response = await this.httpRetryService.axiosRef.post<IStatusResponse>(url, payload, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -38,8 +39,7 @@ export class RetryService {
 
         this.logger.log(FriendlyStatusMessages[response.data?.status] || response.data?.status);
 
-
-        if (!response.data || this.abortStatuses.includes(response.data.status)) {
+        if (!response.data || this.abortStatuses.includes(response.data?.status)) {
           clearInterval(interval);
           clearTimeout(timeout);
 

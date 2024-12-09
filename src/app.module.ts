@@ -1,9 +1,9 @@
 import { Logger, Module } from '@nestjs/common';
-import { AuthService, IssuesService, RetryService, WebhookService } from './services';
+import { AuthService, IssuesService, RetryService, WebhookService, ReportService } from './services';
 import { StatusCommand } from './commands';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { appConfig } from './config';
-import { ReportService } from './services/report.service';
+import { HttpRetryModule } from './utils';
 
 @Module({
   imports: [
@@ -23,7 +23,16 @@ import { ReportService } from './services/report.service';
         return config;
       },
     }),
+    HttpRetryModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        baseURL: configService.get<string>('app.apiUrl'),
+        retry: 3,
+      }),
+    }),
   ],
   providers: [RetryService, AuthService, IssuesService, StatusCommand, Logger, ReportService, WebhookService],
 })
-export class AppModule {}
+export class AppModule {
+}
