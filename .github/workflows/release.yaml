@@ -5,6 +5,7 @@ on:
       - main
       - beta
       - alpha
+      - fix/ADP-3317_remove_issue
 
 permissions:
   contents: read
