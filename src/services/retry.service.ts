@@ -18,8 +18,8 @@ export class RetryService {
     private readonly httpRetryService: HttpRetryService,
   ) {}
 
-  continueStatuses = [EScanningStatus.WAITING, EScanningStatus.SCANNING];
-  abortStatuses = [EScanningStatus.SKIPPED, EScanningStatus.SCANNED];
+  private continueStatuses = [EScanningStatus.WAITING, EScanningStatus.SCANNING];
+  private abortStatuses = [EScanningStatus.SKIPPED, EScanningStatus.SCANNED];
 
   async retryUntilSuccess(url: string, payload: ICommitScanStatusPayload, maxExecutionTime: number, retryTime: number, withReport: boolean) {
     const timeout = setTimeout(() => {
