@@ -7,6 +7,7 @@ import { InternalDisabledLogger } from './utils';
 async function bootstrap() {
   await CommandFactory.run(AppModule, {
     logger: new InternalDisabledLogger(),
+    cliName: 'myrror-cli',
   });
 }
 bootstrap();

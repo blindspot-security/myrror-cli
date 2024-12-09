@@ -1,25 +1,28 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CommandRunner, Command, Option } from 'nest-commander';
+import { CommandRunner, RootCommand, Option } from 'nest-commander';
 
 import { RetryService, WebhookService } from '../services';
 import { CommandOptions } from '../types';
-@Command({
+
+@RootCommand({
   name: 'status',
+  description: 'Check the status of a commit',
   options: { isDefault: true },
 })
 export class StatusCommand extends CommandRunner {
   constructor(
     private readonly retryService: RetryService,
-    private configService: ConfigService,
-    private webhookService: WebhookService,
-    private logger: Logger,
+    private readonly configService: ConfigService,
+    private readonly webhookService: WebhookService,
+    private readonly logger: Logger,
   ) {
     super();
   }
 
   @Option({
     flags: '-r, --repository [string]',
+    description: 'Specify the repository',
   })
   parseRepository(value: string): string {
     return value;
@@ -27,6 +30,7 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-b, --branch [string]',
+    description: 'Specify the branch',
   })
   parseBranch(value: string): string {
     return value;
@@ -34,6 +38,7 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-c, --commit [string]',
+    description: 'Specify the commit',
   })
   parseCommit(value: string): string {
     return value;
@@ -41,6 +46,7 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-rns, --rootNamespace [string]',
+    description: 'Specify the root namespace',
     required: false,
   })
   parseRootNamespace(value: string): string {
@@ -49,6 +55,7 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-pri, --pullRequestIid [string]',
+    description: 'Specify the pull request iid',
     required: false,
   })
   parsePullRequestIid(value: string): string {
@@ -57,6 +64,7 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-roi, --repoOriginId [string]',
+    description: 'Specify the repo origin id',
     required: false,
   })
   parserRepoOriginId(value: string): string {
@@ -65,6 +73,7 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-esw, --enabledSyntheticWebhooks [string]',
+    description: 'Specify if synthetic webhooks are enabled',
     required: false,
   })
   parseEnabledSyntheticWebhooks(value: string): boolean {
@@ -73,34 +82,11 @@ export class StatusCommand extends CommandRunner {
 
   @Option({
     flags: '-wr, --withReport [string]',
+    description: 'Specify if the report should be generated',
     required: false,
   })
   parseWithReport(value: string): boolean {
     return value === 'true';
-  }
-
-  @Option({
-    flags: '-h, --help',
-    description: 'Display help information',
-  })
-  displayHelp(): void {
-    console.log(`
-      Usage: npm run status -- [options]
-  
-      Options:
-        -r, --repository [string]           Specify the repository
-        -b, --branch [string]               Specify the branch
-        -c, --commit [string]               Specify the commit
-        -rns, --rootNamespace [string]      Specify the root namespace
-        -wr, --withReport [boolean]         Specify if the report should be generated
-        -pri, --pullRequestIid [string]     Specify the pull request iid
-        -roi, --repoOriginId [string]       Specify the repo origin id
-        -esw, --enabledSyntheticWebhooks    Specify if synthetic webhooks are enabled
-  
-      Examples:
-        npm run status -r your-repository -b your-branch -c your-commit -rns your-root-namespace -wr false -pri your-pull-request-iid -roi your-repo-origin-id -esw true
-    `);
-    process.exit(0);
   }
 
   async run(passedParams: string[], options?: CommandOptions): Promise<void> {
