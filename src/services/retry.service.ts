@@ -5,6 +5,7 @@ import { ICommitScanStatusPayload, IStatusResponse } from '../types';
 import { AuthService } from './auth.service';
 import { IssuesService } from './issues.service';
 import { EScanningStatus } from '../types/scanning-status.enum';
+import { FriendlyStatusMessages } from '../types/friendly-status-messages.const';
 import { ReportService } from './report.service';
 
 @Injectable()
@@ -35,7 +36,8 @@ export class RetryService {
           },
         });
 
-        this.logger.log(`status is ${response.data?.status}`);
+        this.logger.log(FriendlyStatusMessages[response.data?.status] || response.data?.status);
+
 
         if (!response.data || this.abortStatuses.includes(response.data.status)) {
           clearInterval(interval);
@@ -65,7 +67,7 @@ export class RetryService {
             process.exit(0);
           }
         } else if (this.continueStatuses.includes(response.data.status)) {
-          this.logger.log('retrying...');
+          this.logger.debug('retrying...');
         }
       } catch (error) {
         if (error.response?.status === 401) {
