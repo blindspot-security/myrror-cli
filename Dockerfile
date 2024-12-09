@@ -13,4 +13,5 @@ COPY --from=development /usr/src/app/dist ./dist
 ENV MYRROR_API=https://api.myrror.security/v1 \
     MYRROR_RETRY_TIME=10000 \
     MYRROR_TIMEOUT=3600000
-CMD ["node", "dist/main.js"]
+RUN npm link
+CMD ["myrror-cli"]

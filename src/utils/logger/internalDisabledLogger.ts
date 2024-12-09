@@ -1,5 +1,4 @@
 import { ConsoleLogger } from '@nestjs/common';
-import * as process from 'node:process';
 import { LogLevel } from '@nestjs/common/services/logger.service';
 
 /**
@@ -11,16 +10,11 @@ import { LogLevel } from '@nestjs/common/services/logger.service';
  * - `NestFactory`
  */
 export class InternalDisabledLogger extends ConsoleLogger {
-  static contextsToIgnore = [
-    'InstanceLoader',
-    'RoutesResolver',
-    'RouterExplorer',
-    'NestFactory', // I prefer not including this one
-  ];
+  static contextsToIgnore = ['InstanceLoader', 'RoutesResolver', 'RouterExplorer', 'NestFactory'];
 
   constructor() {
     super();
-    const baseLogLevels: LogLevel[] = ['log', 'warn', 'error'];
+    const baseLogLevels: LogLevel[] = ['log', 'error', 'warn', 'verbose', 'fatal'];
     if (process.env.MYRROR_LOG_LEVEL === 'debug') {
       baseLogLevels.push('debug');
     }
@@ -28,32 +22,71 @@ export class InternalDisabledLogger extends ConsoleLogger {
   }
 
   log(message: any, context?: string): void {
+    if (!this.isLevelEnabled('log')) {
+      return;
+    }
     if (!InternalDisabledLogger.contextsToIgnore.includes(context)) {
-      super.log(message, context);
+      if (!context) {
+        super.log(message);
+      } else {
+        super.log(message, context);
+      }
     }
   }
 
-  error(message: any, stack?: string, context?: string) {
+  error(message: any, stack?: string, context?: string): void {
+    if (!this.isLevelEnabled('error')) {
+      return;
+    }
     if (!InternalDisabledLogger.contextsToIgnore.includes(context)) {
-      super.error(message, stack, context);
+      if (!stack) {
+        super.error(message, stack);
+      } else {
+        super.error(message, stack, context);
+      }
     }
   }
 
-  warn(message: any, context?: string) {
+  warn(message: any, context?: string): void {
+    if (!this.isLevelEnabled('warn')) {
+      return;
+    }
     if (!InternalDisabledLogger.contextsToIgnore.includes(context)) {
-      super.warn(message, context);
+      if (!context) {
+        super.warn(message);
+      } else {
+        super.warn(message, context);
+      }
     }
   }
 
-  debug(message: any, context?: string) {
+  debug(message: any, context?: string): void {
+    if (!this.isLevelEnabled('debug')) {
+      return;
+    }
     if (!InternalDisabledLogger.contextsToIgnore.includes(context)) {
-      super.debug(message, context);
+      if (!context) {
+        super.debug(message);
+      } else {
+        super.debug(message, context);
+      }
     }
   }
 
-  verbose(message: any, context?: string) {
-    if (!InternalDisabledLogger.contextsToIgnore.includes(context)) {
-      super.verbose(message, context);
+  verbose(message: any, context?: string): void {
+    if (!this.isLevelEnabled('verbose')) {
+      return;
     }
+    if (!InternalDisabledLogger.contextsToIgnore.includes(context)) {
+      if (!context) {
+        super.verbose(message);
+      } else {
+        super.verbose(message, context);
+      }
+    }
+  }
+
+  formatPid(pid: number): string {
+    return `[myrror-cli] ${pid}  - `;
   }
 }
