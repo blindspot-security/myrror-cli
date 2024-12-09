@@ -4,7 +4,7 @@
   "description": "Myrror CLI is a command-line tool that uses the Myrror API to check the status of your projects.",
   "author": "Myrror Security",
   "private": false,
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "bin": {
     "myrror-cli": "dist/main.js"
   },
