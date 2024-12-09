@@ -1,9 +1,8 @@
-import { StatusCommand } from '../../src/commands/status.command';
-import { RetryService } from '../../src/services/retry.service';
+import { StatusCommand } from '../../src/commands';
+import { RetryService, WebhookService } from '../../src/services';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { CommandOptions } from 'src/types';
-import { WebhookService } from 'src/services';
 
 describe('StatusCommand', () => {
   let statusCommand: StatusCommand;
@@ -11,7 +10,9 @@ describe('StatusCommand', () => {
   let configService: jest.Mocked<ConfigService>;
   let logger: jest.Mocked<Logger>;
   let webhookService: jest.Mocked<WebhookService>;
-
+  beforeAll(() => {
+    process.env.MYRROR_API = 'http://localhost';
+  });
   beforeEach(() => {
     retryService = {
       retryUntilSuccess: jest.fn(),
@@ -170,7 +171,6 @@ describe('StatusCommand', () => {
   });
 
   it('should call sendGitlabPullRequestData with the correct parameters', async () => {
-    const url = 'http://localhost';
     const timeout = 5000;
     const retryTime = 1000;
     const repository = 'repository';
@@ -181,7 +181,7 @@ describe('StatusCommand', () => {
 
     configService.get.mockImplementation((key: string) => {
       const configMap = {
-        'app.apiUrl': url,
+        'app.apiUrl': process.env.MYRROR_API,
         'app.timeout': timeout,
         'app.retryTime': retryTime,
         'app.repository': repository,
@@ -203,7 +203,6 @@ describe('StatusCommand', () => {
   });
 
   it('should call retryUntilSuccess with the correct parameters', async () => {
-    const url = 'http://localhost';
     const timeout = 5000;
     const retryTime = 1000;
     const repository = 'repository';
@@ -217,7 +216,7 @@ describe('StatusCommand', () => {
 
     configService.get.mockImplementation((key: string) => {
       const configMap = {
-        'app.apiUrl': url,
+        'app.apiUrl': process.env.MYRROR_API,
         'app.timeout': timeout,
         'app.retryTime': retryTime,
         'app.repository': repository,
@@ -229,6 +228,6 @@ describe('StatusCommand', () => {
 
     await statusCommand.run([]);
 
-    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`${url}/repositories/commit/scan/status`, payload, timeout, retryTime, undefined);
+    expect(retryService.retryUntilSuccess).toHaveBeenCalledWith(`/repositories/commit/scan/status`, payload, timeout, retryTime, undefined);
   });
 });

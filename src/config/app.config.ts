@@ -15,4 +15,5 @@ export const appConfig = registerAs('app', () => ({
   enabledSyntheticWebhooks: process.env.MYRROR_ENABLED_SYNTHETIC_WEBHOOKS === 'true' || false,
   repoOriginId: process.env.MYRROR_REPO_ORIGIN_ID,
   projectArtifactDir: process.env.MYRROR_CI_ARTIFACT_DIR,
+  logLevel: process.env.MYRROR_LOG_LEVEL || 'info',
 }));

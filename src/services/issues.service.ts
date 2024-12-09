@@ -1,25 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 import * as Table from 'cli-table3';
 
 import { AuthService } from './auth.service';
 import { IIssueResponse, ESeverityLevel, IIssuesDiffResponse } from '../types';
+import { HttpRetryService } from '../utils';
 
 @Injectable()
 export class IssuesService {
   constructor(
-    private logger: Logger,
-    private authService: AuthService,
-    private configService: ConfigService,
+    private readonly logger: Logger,
+    private readonly authService: AuthService,
+    private readonly httpRetryService: HttpRetryService,
   ) {}
 
-  async getIssues(repoId, branchId) {
+  async getIssues(repoId: string, branchId: string) {
     try {
-      const url = this.configService.get<string>('app.apiUrl');
       const token = await this.authService.getToken();
 
-      const response = await axios.get<IIssuesDiffResponse>(`${url}/issues/diff/cli`, {
+      const response = await this.httpRetryService.axiosRef.get<IIssuesDiffResponse>(`/issues/diff/cli`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -57,7 +55,7 @@ export class IssuesService {
     }
   }
 
-  transformIssueToRow(issue: IIssueResponse, index: number) {
+  private transformIssueToRow(issue: IIssueResponse, index: number) {
     const severity = issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1).toLowerCase();
     const name = issue.name.replace(':', ': ');
     const dependency = `${issue.dependencyName}:${issue.dependencyInstalledVersion}`;
